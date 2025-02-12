@@ -2,8 +2,10 @@ import React, {useState, useMemo} from 'react';
 import {View, FlatList, StyleSheet, ViewStyle} from 'react-native';
 import {Searchbar} from 'react-native-paper';
 import HotelCard from './HotelCard';
-import {Hotel} from '../types/Hotel';
+import {Hotel, RootStackParamList} from '../types/Hotel';
 import {Dropdown} from 'react-native-paper-dropdown';
+import {StackNavigationProp} from '@react-navigation/stack';
+import {useNavigation} from '@react-navigation/native';
 
 interface Props {
   hotels: Hotel[];
@@ -32,7 +34,14 @@ enum MinRatings {
   NinePlus = '9',
 }
 
+type HotelListNavigationProp = StackNavigationProp<
+  RootStackParamList,
+  'HotelList'
+>;
+
 const HotelList: React.FC<Props> = ({hotels, style}) => {
+  const navigation = useNavigation<HotelListNavigationProp>();
+
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOption, setSortOption] = useState(SortOptions.PriceLow);
   const [minRating, setMinRating] = useState(MinRatings.All);
@@ -117,7 +126,10 @@ const HotelList: React.FC<Props> = ({hotels, style}) => {
         showsVerticalScrollIndicator={false}
         keyExtractor={item => item.id.toString()}
         renderItem={({item}) => (
-          <HotelCard hotel={item} onPress={() => console.log(item.name)} />
+          <HotelCard
+            hotel={item}
+            onPress={() => navigation.navigate('HotelDetail', {hotel: item})}
+          />
         )}
       />
     </View>
