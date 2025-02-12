@@ -39,7 +39,7 @@ const HotelCard: React.FC<Props> = ({hotel, onPress}) => {
 };
 
 const styles = StyleSheet.create({
-  card: {margin: 10, overflow: 'hidden'},
+  card: {marginVertical: 10, overflow: 'hidden'},
   image: {width: '100%', height: 150},
 });
 

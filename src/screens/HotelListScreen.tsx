@@ -1,54 +1,60 @@
 import React, {useEffect, useState} from 'react';
-import {View, FlatList, ActivityIndicator, StyleSheet} from 'react-native';
-import {Appbar} from 'react-native-paper';
+import {View, ActivityIndicator, StyleSheet} from 'react-native';
+import {Text} from 'react-native-paper';
 import {Hotel} from '../types/Hotel';
-import HotelCard from '../components/HotelCard';
-import {API_URL} from '../constants/globalConst';
+import HotelList from '../components/HotelList';
+import {fetchHotels} from '../api/hotels';
+import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
-const HotelListScreen = ({navigation}: any) => {
+const HotelListScreen: React.FC = () => {
+  const {top, bottom} = useSafeAreaInsets();
+
   const [hotels, setHotels] = useState<Hotel[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(API_URL)
-      .then(res => res.json())
-      .then(data => {
+    const loadHotels = async () => {
+      try {
+        const data = await fetchHotels();
         setHotels(data);
+      } catch (err) {
+        setError('Failed to load hotels. Please try again later.');
+      } finally {
         setLoading(false);
-      })
-      .catch(error => {
-        console.error('Error fetching hotels:', error);
-        setLoading(false);
-      });
+      }
+    };
+
+    loadHotels();
   }, []);
 
-  return (
-    <View style={styles.container}>
-      <Appbar.Header>
-        <Appbar.Content title="Hotels in London" />
-      </Appbar.Header>
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
 
-      {loading ? (
-        <ActivityIndicator size="large" style={styles.loader} />
-      ) : (
-        <FlatList
-          data={hotels}
-          keyExtractor={item => item.id.toString()}
-          renderItem={({item}) => (
-            <HotelCard
-              hotel={item}
-              onPress={() => navigation.navigate('HotelDetail', {hotel: item})}
-            />
-          )}
-        />
-      )}
+  if (error) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.errorText}>{error}</Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={[styles.container, {paddingTop: top}]}>
+      <HotelList hotels={hotels} style={{paddingBottom: bottom}} />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {flex: 1, backgroundColor: '#f5f5f5'},
-  loader: {flex: 1, justifyContent: 'center', alignItems: 'center'},
+  container: {flex: 1, padding: 10},
+  center: {flex: 1, justifyContent: 'center', alignItems: 'center'},
+  errorText: {color: 'red', fontSize: 16},
 });
 
 export default HotelListScreen;
