@@ -1,6 +1,6 @@
 import React, {useState, useMemo} from 'react';
 import {View, FlatList, StyleSheet, ViewStyle} from 'react-native';
-import {Searchbar} from 'react-native-paper';
+import {Searchbar, Text} from 'react-native-paper';
 import HotelCard from './HotelCard';
 import {Hotel} from '../types/Hotel';
 import {Dropdown} from 'react-native-paper-dropdown';
@@ -31,6 +31,19 @@ enum MinRatings {
   EightPlus = '8',
   NinePlus = '9',
 }
+
+const CustomIcon: React.FC<{name: string; size?: number; color?: string}> = ({
+  name,
+  size = 24,
+  color = 'black',
+}) => {
+  const iconMap: {[key: string]: string} = {
+    search: '🔍',
+    cancel: 'Ⓧ',
+  };
+
+  return <Text style={{fontSize: size, color}}>{iconMap[name] || ''}</Text>;
+};
 
 const HotelList: React.FC<Props> = ({hotels, style}) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -67,6 +80,8 @@ const HotelList: React.FC<Props> = ({hotels, style}) => {
         value={searchQuery}
         onChangeText={setSearchQuery}
         style={styles.searchBar}
+        icon={() => CustomIcon({name: 'search'})}
+        clearIcon={() => CustomIcon({name: 'cancel'})}
       />
 
       <View style={styles.dropdown}>
@@ -80,7 +95,7 @@ const HotelList: React.FC<Props> = ({hotels, style}) => {
             {label: 'Stars', value: SortOptions.Stars},
           ]}
           value={sortOption}
-          onSelect={value => setSortOption(value)}
+          onSelect={value => setSortOption(value as SortOptions)}
         />
 
         {/* Star Rating Filter */}
@@ -93,7 +108,7 @@ const HotelList: React.FC<Props> = ({hotels, style}) => {
             {label: '5 Stars', value: StarRatings.FiveStars},
           ]}
           value={selectedStars}
-          onSelect={value => setSelectedStars(value)}
+          onSelect={value => setSelectedStars(value as StarRatings)}
         />
 
         {/* Minimum Rating Filter */}
@@ -107,7 +122,7 @@ const HotelList: React.FC<Props> = ({hotels, style}) => {
             {label: '9+', value: MinRatings.NinePlus},
           ]}
           value={minRating}
-          onSelect={value => setMinRating(value)}
+          onSelect={value => setMinRating(value as MinRatings)}
         />
       </View>
       {/* Render Hotel List */}
