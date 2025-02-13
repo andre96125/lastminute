@@ -6,55 +6,40 @@ import {
   StyleSheet,
   ScrollView,
   Image,
-  TouchableOpacity,
   Linking,
   Alert,
   Dimensions,
 } from 'react-native';
-import {RouteProp} from '@react-navigation/native';
-import {Hotel} from '../types/Hotel';
-import MapView, {Marker} from 'react-native-maps';
-import {Button, Card} from 'react-native-paper';
+import {Button, Card, Divider} from 'react-native-paper';
+import type {NativeStackScreenProps} from '@react-navigation/native-stack';
+import {RootStackParamList} from '../types/navigation';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-interface HotelDetailScreenProps {
-  route: RouteProp<{params: {hotel: Hotel}}, 'params'>;
-}
+type Props = NativeStackScreenProps<RootStackParamList, 'HotelDetail'>;
 
 const {width} = Dimensions.get('window');
 
-const HotelDetailScreen: React.FC<HotelDetailScreenProps> = ({route}) => {
+const HotelDetailScreen: React.FC<Props> = ({route}) => {
+  const {bottom} = useSafeAreaInsets();
+
   const {hotel} = route.params;
   const [imageError, setImageError] = useState<{[key: number]: boolean}>({});
 
   const images =
     hotel.gallery.length > 0
       ? hotel.gallery
-      : ['https://fakeimg.pl/300x200?text=No+Image'];
+      : ['https://fakeimg.pl/600x400?text=No+Image'];
 
   const handleCall = (phoneNumber: string) => {
-    const phoneUrl = `tel:${phoneNumber}`;
-    Linking.canOpenURL(phoneUrl)
-      .then(supported => {
-        if (supported) {
-          Linking.openURL(phoneUrl);
-        } else {
-          Alert.alert('Phone call is not supported on this device');
-        }
-      })
-      .catch(() => Alert.alert('Phone call is not supported on this device'));
+    Linking.openURL(`tel:${phoneNumber}`).catch(() =>
+      Alert.alert('Phone call is not supported on this device'),
+    );
   };
 
   const handleEmail = (email: string) => {
-    const emailUrl = `mailto:${email}`;
-    Linking.canOpenURL(emailUrl)
-      .then(supported => {
-        if (supported) {
-          Linking.openURL(emailUrl);
-        } else {
-          Alert.alert('Email is not supported on this device');
-        }
-      })
-      .catch(() => Alert.alert('Email is not supported on this device'));
+    Linking.openURL(`mailto:${email}`).catch(() =>
+      Alert.alert('Email is not supported on this device'),
+    );
   };
 
   const handleImageError = (index: number) => {
@@ -64,46 +49,47 @@ const HotelDetailScreen: React.FC<HotelDetailScreenProps> = ({route}) => {
     }));
   };
 
-  const renderImage = (image: string, index: number) => (
-    <View key={index} style={styles.imageContainer}>
-      <Image
-        source={{
-          uri: imageError[index]
-            ? 'https://fakeimg.pl/300x200?text=No+Image'
-            : image,
-        }}
-        style={styles.image}
-        onError={() => handleImageError(index)}
-      />
-    </View>
-  );
-
-  const renderContactButton = (label: string, onPress: () => void) => (
-    <Button mode="contained" onPress={onPress} style={styles.ctaButton}>
-      {label}
-    </Button>
-  );
-
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
+      {/* Image Carousel */}
       <ScrollView
-        style={styles.scrollView}
         horizontal
         pagingEnabled
-        showsHorizontalScrollIndicator={false}>
-        {images.map(renderImage)}
+        showsHorizontalScrollIndicator={false}
+        style={styles.imageScroll}>
+        {images.map((image, index) => (
+          <View key={index} style={styles.imageContainer}>
+            <Image
+              source={{
+                uri: imageError[index]
+                  ? 'https://fakeimg.pl/600x400?text=No+Image'
+                  : image,
+              }}
+              style={styles.image}
+              onError={() => handleImageError(index)}
+            />
+          </View>
+        ))}
       </ScrollView>
-      <ScrollView contentContainerStyle={styles.contentContainer}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.contentContainer,
+          {paddingBottom: bottom},
+        ]}>
+        {/* Hotel Details */}
         <Text style={styles.hotelName}>{hotel.name}</Text>
         <Text style={styles.stars}>{'⭐'.repeat(hotel.stars)}</Text>
-        <Text style={styles.userRating}>Rating: {hotel.userRating}/10</Text>
+        <Text style={styles.userRating}>
+          User Rating: {hotel.userRating}/10
+        </Text>
         <Text style={styles.price}>
-          {hotel.price} {hotel.currency} per night
+          {hotel.price} {hotel.currency} / night
         </Text>
 
+        {/* Check-in & Check-out Info */}
         <Card style={styles.card}>
           <Card.Title
-            title="Check-in/Check-out"
+            title="Check-in & Check-out"
             titleStyle={styles.cardTitle}
           />
           <Card.Content>
@@ -116,94 +102,114 @@ const HotelDetailScreen: React.FC<HotelDetailScreenProps> = ({route}) => {
           </Card.Content>
         </Card>
 
-        {renderContactButton(`Call us: ${hotel.contact.phoneNumber}`, () =>
-          handleCall(hotel.contact.phoneNumber),
-        )}
-        {renderContactButton(`Email: ${hotel.contact.email}`, () =>
-          handleEmail(hotel.contact.email),
-        )}
+        {/* Contact Buttons */}
+        <View style={styles.buttonContainer}>
+          <Button
+            mode="contained"
+            onPress={() => handleCall(hotel.contact.phoneNumber)}
+            style={styles.ctaButton}>
+            Call: {hotel.contact.phoneNumber}
+          </Button>
+          <Button
+            mode="outlined"
+            onPress={() => handleEmail(hotel.contact.email)}
+            style={styles.ctaButton}>
+            Email: {hotel.contact.email}
+          </Button>
+        </View>
 
-        <Text style={styles.text}>
-          Address: {hotel.location.address}, {hotel.location.city}
+        {/* Address */}
+        <Divider style={styles.divider} />
+        <Text style={styles.address}>
+          📍 {hotel.location.address}, {hotel.location.city}
         </Text>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#F8F9FA',
   },
-  scrollView: {
+  imageScroll: {
     maxHeight: 250,
   },
   imageContainer: {
     width: width,
-    justifyContent: 'flex-start',
     alignItems: 'center',
   },
   image: {
     width: '100%',
     height: 250,
   },
+  contentContainer: {
+    paddingTop: 20,
+    paddingHorizontal: 20,
+  },
   hotelName: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginTop: 10,
     textAlign: 'center',
+    marginVertical: 8,
+    color: '#333',
   },
   stars: {
     fontSize: 18,
     textAlign: 'center',
-    marginTop: 5,
+    marginVertical: 5,
   },
   userRating: {
     fontSize: 16,
     textAlign: 'center',
-    marginVertical: 5,
+    color: '#555',
+    marginBottom: 10,
   },
   price: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginTop: 5,
-  },
-  location: {
-    fontSize: 16,
-    color: 'gray',
-    textAlign: 'center',
-    marginTop: 10,
-  },
-  checkInOut: {
-    fontSize: 16,
-    textAlign: 'center',
-    marginVertical: 5,
-  },
-  text: {
-    fontSize: 16,
-    color: 'gray',
-    textAlign: 'center',
-    marginVertical: 10,
+    color: '#007AFF',
+    marginBottom: 15,
   },
   card: {
-    marginVertical: 10,
+    marginVertical: 12,
     borderRadius: 8,
     elevation: 3,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#fff',
   },
   cardTitle: {
     fontSize: 18,
     fontWeight: 'bold',
+    color: '#333',
+  },
+  checkInOut: {
+    fontSize: 16,
+    textAlign: 'center',
+    color: '#444',
+    marginVertical: 3,
+  },
+  buttonContainer: {
+    marginTop: 15,
+    alignItems: 'center',
   },
   ctaButton: {
-    marginVertical: 10,
-    borderRadius: 25,
+    width: '90%',
+    marginVertical: 8,
+    borderRadius: 30,
+    paddingVertical: 5,
   },
-  contentContainer: {
-    paddingBottom: 20,
-    paddingHorizontal: 20,
+  divider: {
+    marginVertical: 15,
+    backgroundColor: '#E0E0E0',
+    height: 1,
+  },
+  address: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginVertical: 10,
   },
 });
 

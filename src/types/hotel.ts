@@ -25,8 +25,3 @@ export interface Hotel {
   price: number;
   currency: string;
 }
-
-export type RootStackParamList = {
-  HotelList: undefined;
-  HotelDetail: {hotel: Hotel};
-};

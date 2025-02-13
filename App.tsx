@@ -4,8 +4,9 @@ import {createStackNavigator} from '@react-navigation/stack';
 import HotelListScreen from './src/screens/HotelListScreen';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import HotelDetailScreen from './src/screens/HotelDetailScreen';
+import {RootStackParamList} from './src/types/navigation';
 
-const Stack = createStackNavigator();
+const Stack = createStackNavigator<RootStackParamList>();
 
 const AppNavigator = () => {
   return (
