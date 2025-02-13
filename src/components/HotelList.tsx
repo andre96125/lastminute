@@ -2,10 +2,11 @@ import React, {useState, useMemo} from 'react';
 import {View, FlatList, StyleSheet, ViewStyle} from 'react-native';
 import {Searchbar, Text} from 'react-native-paper';
 import HotelCard from './HotelCard';
-import {Hotel, RootStackParamList} from '../types/Hotel';
+import {Hotel} from '../types/Hotel';
 import {Dropdown} from 'react-native-paper-dropdown';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {useNavigation} from '@react-navigation/native';
+import {RootStackParamList} from '../types/navigation';
 
 interface Props {
   hotels: Hotel[];
