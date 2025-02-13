@@ -4,7 +4,7 @@ import {Text} from 'react-native-paper';
 import {Hotel} from '../types/Hotel';
 import HotelList from '../components/HotelList';
 import {fetchHotels} from '../api/hotels';
-import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 const HotelListScreen: React.FC = () => {
   const {top, bottom} = useSafeAreaInsets();
